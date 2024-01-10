@@ -1,0 +1,7 @@
+filename,filepath,flood_image,scratch_percentage_of_image,max_width,min_width,mean_width,median_width
+1 0.png,C:/Users/Ivy/Documents/Programming/Godot/Scratch Wound Assay Analyzer/Test/Data/spandios data for testing/1 0.png,<Image#-9223371902452496360>,0.41553772070626,0.45142857142857,0.39714285714286,0.41553772070626,0.41428571428571
+1 48.png,C:/Users/Ivy/Documents/Programming/Godot/Scratch Wound Assay Analyzer/Test/Data/spandios data for testing/1 48.png,<Image#-9223371902100174857>,0.14496322353694,0.23446327683616,0.03107344632768,0.14496322353694,0.1638418079096
+2 0.png,C:/Users/Ivy/Documents/Programming/Godot/Scratch Wound Assay Analyzer/Test/Data/spandios data for testing/2 0.png,<Image#-9223371901814962168>,0.3586031411775,0.38793103448276,0.34195402298851,0.3586031411775,0.35632183908046
+2 48.png,C:/Users/Ivy/Documents/Programming/Godot/Scratch Wound Assay Analyzer/Test/Data/spandios data for testing/2 48.png,<Image#-9223371901529749479>,0.22251516822945,0.28857142857143,0.11714285714286,0.22251516822945,0.23714285714286
+ctrl 0.png,C:/Users/Ivy/Documents/Programming/Godot/Scratch Wound Assay Analyzer/Test/Data/spandios data for testing/ctrl 0.png,<Image#-9223371901244536815>,0.32007006465843,0.35977337110482,0.28045325779037,0.32007006465843,0.32011331444759
+ctrl 48.png,C:/Users/Ivy/Documents/Programming/Godot/Scratch Wound Assay Analyzer/Test/Data/spandios data for testing/ctrl 48.png,<Image#-9223371900992878588>,0.07136827066693,0.25423728813559,0.03107344632768,0.14901694915254,0.13841807909605

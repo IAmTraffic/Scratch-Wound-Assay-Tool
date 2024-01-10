@@ -1,0 +1,284 @@
+[gd_scene load_steps=15 format=3 uid="uid://ck6yp51bsdlwr"]
+
+[ext_resource type="Script" path="res://main.gd" id="1_5tvpk"]
+[ext_resource type="Script" path="res://TexturesContainer.gd" id="2_kcg4b"]
+[ext_resource type="Shader" path="res://greyscale.gdshader" id="3_ujhcs"]
+[ext_resource type="Shader" path="res://sobel.gdshader" id="5_6rvam"]
+[ext_resource type="Shader" path="res://laplacian.gdshader" id="5_avaa7"]
+[ext_resource type="Shader" path="res://gaussian.gdshader" id="6_5d0h6"]
+[ext_resource type="Shader" path="res://threshold.gdshader" id="7_kf4ih"]
+[ext_resource type="Shader" path="res://flood_display.gdshader" id="9_iyuc5"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_vgm26"]
+shader = ExtResource("3_ujhcs")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_0w7ht"]
+shader = ExtResource("5_6rvam")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_e104t"]
+shader = ExtResource("5_avaa7")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_p0em6"]
+shader = ExtResource("6_5d0h6")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_pn6x7"]
+shader = ExtResource("7_kf4ih")
+shader_parameter/threshold = 0.1
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_hieuy"]
+shader = ExtResource("9_iyuc5")
+
+[node name="Main" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_5tvpk")
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.262745, 0.262745, 0.262745, 1)
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+
+[node name="LoadBtn" type="Button" parent="VBoxContainer/HBoxContainer"]
+layout_mode = 2
+text = "Load New Image(s)"
+
+[node name="ImageProcessing" type="Control" parent="VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="SubViewportContainer" type="SubViewportContainer" parent="VBoxContainer/ImageProcessing"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -256.0
+offset_top = -256.0
+offset_right = 256.0
+offset_bottom = 256.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("2_kcg4b")
+
+[node name="SubViewport" type="SubViewport" parent="VBoxContainer/ImageProcessing/SubViewportContainer"]
+unique_name_in_owner = true
+handle_input_locally = false
+render_target_update_mode = 4
+
+[node name="TextureRect" type="TextureRect" parent="VBoxContainer/ImageProcessing/SubViewportContainer/SubViewport"]
+material = SubResource("ShaderMaterial_vgm26")
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Sobel" type="CanvasLayer" parent="VBoxContainer/ImageProcessing/SubViewportContainer/SubViewport"]
+
+[node name="ColorRect" type="ColorRect" parent="VBoxContainer/ImageProcessing/SubViewportContainer/SubViewport/Sobel"]
+material = SubResource("ShaderMaterial_0w7ht")
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Laplacian" type="CanvasLayer" parent="VBoxContainer/ImageProcessing/SubViewportContainer/SubViewport"]
+
+[node name="ColorRect" type="ColorRect" parent="VBoxContainer/ImageProcessing/SubViewportContainer/SubViewport/Laplacian"]
+visible = false
+material = SubResource("ShaderMaterial_e104t")
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Gaussian" type="CanvasLayer" parent="VBoxContainer/ImageProcessing/SubViewportContainer/SubViewport"]
+
+[node name="ColorRect" type="ColorRect" parent="VBoxContainer/ImageProcessing/SubViewportContainer/SubViewport/Gaussian"]
+material = SubResource("ShaderMaterial_p0em6")
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Threshold" type="CanvasLayer" parent="VBoxContainer/ImageProcessing/SubViewportContainer/SubViewport"]
+
+[node name="ThresholdRect" type="ColorRect" parent="VBoxContainer/ImageProcessing/SubViewportContainer/SubViewport/Threshold"]
+unique_name_in_owner = true
+material = SubResource("ShaderMaterial_pn6x7")
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Coverall" type="ColorRect" parent="VBoxContainer/ImageProcessing"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.262745, 0.262745, 0.262745, 1)
+
+[node name="Flood Image Display" type="TextureRect" parent="VBoxContainer/ImageProcessing"]
+unique_name_in_owner = true
+material = SubResource("ShaderMaterial_hieuy")
+layout_mode = 1
+anchors_preset = -1
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="FileDialog" type="FileDialog" parent="VBoxContainer/ImageProcessing"]
+title = "Open File(s)"
+position = Vector2i(300, 100)
+size = Vector2i(500, 400)
+ok_button_text = "Open"
+file_mode = 1
+access = 2
+filters = PackedStringArray("*.png", "*.jpg")
+use_native_dialog = true
+
+[node name="Threshold Adjustments" type="VBoxContainer" parent="VBoxContainer/ImageProcessing"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.045
+anchor_top = 0.375
+anchor_right = 0.185
+anchor_bottom = 0.477
+
+[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer/ImageProcessing/Threshold Adjustments"]
+layout_mode = 2
+
+[node name="ThresholdInputField" type="LineEdit" parent="VBoxContainer/ImageProcessing/Threshold Adjustments/HBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="Label" type="Label" parent="VBoxContainer/ImageProcessing/Threshold Adjustments/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "/ 256"
+horizontal_alignment = 1
+
+[node name="ProcessingThresholdSlider" type="HSlider" parent="VBoxContainer/ImageProcessing/Threshold Adjustments"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 2
+max_value = 256.0
+value = 64.0
+tick_count = 6
+ticks_on_borders = true
+
+[node name="ConfirmThresholdBtn" type="Button" parent="VBoxContainer/ImageProcessing/Threshold Adjustments"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+text = "Confirm"
+
+[node name="Post Process Options" type="Control" parent="VBoxContainer"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="MarginContainer" type="MarginContainer" parent="VBoxContainer/Post Process Options"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 257.0
+offset_top = 106.0
+offset_right = -257.0
+offset_bottom = -106.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 100
+theme_override_constants/margin_top = 100
+theme_override_constants/margin_right = 100
+theme_override_constants/margin_bottom = 100
+
+[node name="GridContainer" type="GridContainer" parent="VBoxContainer/Post Process Options/MarginContainer"]
+layout_mode = 2
+columns = 2
+
+[node name="CSVDownload" type="Button" parent="VBoxContainer/Post Process Options/MarginContainer/GridContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+text = "Download CSV"
+
+[node name="ImagesDownload" type="Button" parent="VBoxContainer/Post Process Options/MarginContainer/GridContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+text = "Download Markedup
+Images"
+
+[node name="ProgressLabel" type="Label" parent="."]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="SaveCSVFileDialog" type="FileDialog" parent="."]
+unique_name_in_owner = true
+title = "Save CSV"
+position = Vector2i(300, 100)
+size = Vector2i(500, 400)
+access = 2
+filters = PackedStringArray("*.csv")
+use_native_dialog = true
+
+[node name="SaveImagesFileDialog" type="FileDialog" parent="."]
+unique_name_in_owner = true
+title = "Open a Directory"
+position = Vector2i(300, 100)
+size = Vector2i(500, 400)
+ok_button_text = "Select Current Folder"
+file_mode = 2
+access = 2
+use_native_dialog = true
+
+[connection signal="pressed" from="VBoxContainer/HBoxContainer/LoadBtn" to="." method="_on_load_btn_pressed"]
+[connection signal="files_selected" from="VBoxContainer/ImageProcessing/FileDialog" to="." method="_on_file_dialog_files_selected"]
+[connection signal="text_changed" from="VBoxContainer/ImageProcessing/Threshold Adjustments/HBoxContainer/ThresholdInputField" to="." method="_on_threshold_input_field_text_changed"]
+[connection signal="value_changed" from="VBoxContainer/ImageProcessing/Threshold Adjustments/ProcessingThresholdSlider" to="." method="_on_processing_threshold_slider_value_changed"]
+[connection signal="value_changed" from="VBoxContainer/ImageProcessing/Threshold Adjustments/ProcessingThresholdSlider" to="VBoxContainer/ImageProcessing/SubViewportContainer" method="_on_processing_threshold_slider_value_changed"]
+[connection signal="pressed" from="VBoxContainer/ImageProcessing/Threshold Adjustments/ConfirmThresholdBtn" to="." method="_on_confirm_threshold_btn_pressed"]
+[connection signal="pressed" from="VBoxContainer/Post Process Options/MarginContainer/GridContainer/CSVDownload" to="." method="_on_csv_download_pressed"]
+[connection signal="pressed" from="VBoxContainer/Post Process Options/MarginContainer/GridContainer/ImagesDownload" to="." method="_on_images_download_pressed"]
+[connection signal="file_selected" from="SaveCSVFileDialog" to="." method="_on_save_csv_file_dialog_file_selected"]
+[connection signal="dir_selected" from="SaveImagesFileDialog" to="." method="_on_save_images_file_dialog_dir_selected"]

@@ -1,0 +1,14 @@
+[gd_scene load_steps=2 format=3 uid="uid://bb5w86cyh6eqd"]
+
+[ext_resource type="Script" path="res://DataVis.gd" id="1_bqn4x"]
+
+[node name="Graph" type="ColorRect"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+color = Color(0.415686, 0.415686, 0.415686, 1)
+script = ExtResource("1_bqn4x")

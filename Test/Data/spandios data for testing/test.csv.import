@@ -1,0 +1,17 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://djvx654scwkh6"
+
+[deps]
+
+files=["res://Test/Data/spandios data for testing/test.filepath.translation", "res://Test/Data/spandios data for testing/test.flood.translation", "res://Test/Data/spandios data for testing/test.scratch.translation", "res://Test/Data/spandios data for testing/test.max.translation", "res://Test/Data/spandios data for testing/test.min.translation", "res://Test/Data/spandios data for testing/test.mean.translation", "res://Test/Data/spandios data for testing/test.median.translation"]
+
+source_file="res://Test/Data/spandios data for testing/test.csv"
+dest_files=["res://Test/Data/spandios data for testing/test.filepath.translation", "res://Test/Data/spandios data for testing/test.flood.translation", "res://Test/Data/spandios data for testing/test.scratch.translation", "res://Test/Data/spandios data for testing/test.max.translation", "res://Test/Data/spandios data for testing/test.min.translation", "res://Test/Data/spandios data for testing/test.mean.translation", "res://Test/Data/spandios data for testing/test.median.translation"]
+
+[params]
+
+compress=true
+delimiter=0

@@ -1,0 +1,141 @@
+[gd_scene load_steps=14 format=3 uid="uid://ck6yp51bsdlwr"]
+
+[ext_resource type="Script" path="res://main.gd" id="1_5tvpk"]
+[ext_resource type="Script" path="res://TexturesContainer.gd" id="2_kcg4b"]
+[ext_resource type="Shader" path="res://greyscale.gdshader" id="3_ujhcs"]
+[ext_resource type="Texture2D" uid="uid://bg2wlq61pblad" path="res://test scratch wound assay/Screenshot 2023-11-16 233438.png" id="4_nhe81"]
+[ext_resource type="Shader" path="res://sobel.gdshader" id="5_6rvam"]
+[ext_resource type="Shader" path="res://laplacian.gdshader" id="5_avaa7"]
+[ext_resource type="Shader" path="res://gaussian.gdshader" id="6_5d0h6"]
+[ext_resource type="Shader" path="res://threshold.gdshader" id="7_kf4ih"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_vgm26"]
+shader = ExtResource("3_ujhcs")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_0w7ht"]
+shader = ExtResource("5_6rvam")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_e104t"]
+shader = ExtResource("5_avaa7")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_p0em6"]
+shader = ExtResource("6_5d0h6")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_pn6x7"]
+shader = ExtResource("7_kf4ih")
+
+[node name="Main" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_5tvpk")
+
+[node name="SubViewportContainer" type="SubViewportContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("2_kcg4b")
+
+[node name="SubViewport" type="SubViewport" parent="SubViewportContainer"]
+handle_input_locally = false
+render_target_update_mode = 4
+
+[node name="TextureRect" type="TextureRect" parent="SubViewportContainer/SubViewport"]
+material = SubResource("ShaderMaterial_vgm26")
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("4_nhe81")
+
+[node name="Sobel" type="CanvasLayer" parent="SubViewportContainer/SubViewport"]
+
+[node name="ColorRect" type="ColorRect" parent="SubViewportContainer/SubViewport/Sobel"]
+material = SubResource("ShaderMaterial_0w7ht")
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Laplacian" type="CanvasLayer" parent="SubViewportContainer/SubViewport"]
+
+[node name="ColorRect" type="ColorRect" parent="SubViewportContainer/SubViewport/Laplacian"]
+visible = false
+material = SubResource("ShaderMaterial_e104t")
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Gaussian" type="CanvasLayer" parent="SubViewportContainer/SubViewport"]
+
+[node name="ColorRect" type="ColorRect" parent="SubViewportContainer/SubViewport/Gaussian"]
+material = SubResource("ShaderMaterial_p0em6")
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Threshold" type="CanvasLayer" parent="SubViewportContainer/SubViewport"]
+
+[node name="ColorRect" type="ColorRect" parent="SubViewportContainer/SubViewport/Threshold"]
+material = SubResource("ShaderMaterial_pn6x7")
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Flood Image Display" type="TextureRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="FileDialog" type="FileDialog" parent="."]
+title = "Open File(s)"
+position = Vector2i(300, 100)
+size = Vector2i(500, 400)
+ok_button_text = "Open"
+file_mode = 1
+access = 2
+
+[node name="LoadBtn" type="Button" parent="."]
+layout_mode = 0
+offset_right = 8.0
+offset_bottom = 8.0
+text = "Load New Image"
+
+[node name="ColorRect" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.7
+anchor_top = 0.8
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.419608, 0.419608, 0.419608, 1)
+
+[node name="Label" type="Label" parent="ColorRect"]
+layout_mode = 1
+anchors_preset = -1
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 5.0
+offset_top = 5.0
+offset_right = -5.0
+offset_bottom = -5.0
+
+[connection signal="files_selected" from="FileDialog" to="." method="_on_file_dialog_files_selected"]
+[connection signal="pressed" from="LoadBtn" to="." method="_on_load_btn_pressed"]

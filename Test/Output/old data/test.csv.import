@@ -1,0 +1,17 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://bbahke576ufhm"
+
+[deps]
+
+files=["res://Test/Output/old data/test.filepath.translation", "res://Test/Output/old data/test.flood.translation", "res://Test/Output/old data/test.scratch.translation", "res://Test/Output/old data/test.max.translation", "res://Test/Output/old data/test.min.translation", "res://Test/Output/old data/test.mean.translation", "res://Test/Output/old data/test.median.translation"]
+
+source_file="res://Test/Output/old data/test.csv"
+dest_files=["res://Test/Output/old data/test.filepath.translation", "res://Test/Output/old data/test.flood.translation", "res://Test/Output/old data/test.scratch.translation", "res://Test/Output/old data/test.max.translation", "res://Test/Output/old data/test.min.translation", "res://Test/Output/old data/test.mean.translation", "res://Test/Output/old data/test.median.translation"]
+
+[params]
+
+compress=true
+delimiter=0
