@@ -13,7 +13,9 @@ extends Control
 @onready var flood_image_display = %"Flood Image Display"
 @onready var threshold_input_field = %ThresholdInputField
 @onready var processing_threshold_slider = %ProcessingThresholdSlider
+@onready var post_progress_label = %"Progress Label"
 
+signal image_saved(thread: Thread)
 
 var DATA = []
 const DOWNLOAD_FLOOD_OVERLAY_MIX_WEIGHT = 0.8
@@ -27,6 +29,8 @@ const DOWNLOAD_FLOOD_OVERLAY_MIX_WEIGHT = 0.8
 # add bars to image to represent the edges of the scratch?
 
 func _ready():
+	connect("image_saved", _on_img_save_thread_complete)
+	
 	pass
 	#DEBUG
 #	_on_file_dialog_files_selected(["res://test scratch wound assay/Screenshot 2023-11-16 233333.png"])
@@ -174,9 +178,10 @@ func mix_images(image_1: Image, image_2: Image) -> Image:
 	return mixed_image
 
 
-func _on_save_csv_file_dialog_file_selected(path):
+func _on_save_csv_file_dialog_file_selected(path: String):
+	post_progress_label.text = "Saving data: " + path
+	post_progress_label.show()
 	var column_names : Array = DATA[0].keys()
-	print(path)
 	
 	var file = FileAccess.open(path, FileAccess.WRITE)
 	file.store_csv_line(PackedStringArray(column_names))
@@ -192,20 +197,22 @@ func _on_save_csv_file_dialog_file_selected(path):
 	print("out")
 	file.close()
 	
-	print("file downloaded - " + path)
+	await get_tree().create_timer(2.0).timeout
+	post_progress_label.hide()
 
 
 func _on_save_images_file_dialog_dir_selected(dir):
+	saved_imgs = 0
+	post_progress_label.text = "Processing image " + str(saved_imgs) + " / " + str(DATA.size())
+	post_progress_label.show()
 	for datum in DATA:
-		#save_img_datum(datum, dir)
-		
 		var thread := Thread.new()
-		thread.start(save_img_thread.bind(datum, dir))
+		thread.start(save_img_thread.bind(datum, dir, thread))
 	
 	
 	print("images downloaded - " + dir)
 
-func save_img_thread(datum: Dictionary, dir) -> void:
+func save_img_thread(datum: Dictionary, dir, thread: Thread) -> void:
 	var new_filename: String = dir + "/" + datum.filename.get_basename() + " Overlay." + datum.filename.get_extension()
 	print("Writing " + new_filename)
 	var file_format_on_disk : Image.Format = Image.load_from_file(datum.filepath).get_format()
@@ -214,20 +221,15 @@ func save_img_thread(datum: Dictionary, dir) -> void:
 	var err = new_image.save_png(new_filename)
 	if err:
 		printerr(err)
+	call_deferred("emit_signal", "image_saved", thread)
 
-#func save_img_datum(datum: Dictionary, dir) -> void:
-	#print("datum")
-	#await save_img_datum_helper(datum, dir)
-	#
-#func save_img_datum_helper(datum: Dictionary, dir) -> void:
-	#await get_tree().create_timer(0.0).timeout
-	#var new_filename: String = dir + "/" + datum.filename.get_basename() + " Overlay." + datum.filename.get_extension()
-	#print("Writing " + new_filename)
-	#var file_format_on_disk : Image.Format = Image.load_from_file(datum.filepath).get_format()
-	#datum.flood_image.convert(file_format_on_disk)
-	#print(datum.flood_image.get_size())
-	#print(Image.load_from_file(datum.filepath).get_size())
-	#var new_image: Image = mix_images(datum.flood_image, Image.load_from_file(datum.filepath))
-	#var err = new_image.save_png(new_filename)
-	#if err:
-		#printerr(err)
+var saved_imgs = 0
+func _on_img_save_thread_complete(thread: Thread):
+	thread.wait_to_finish()
+	saved_imgs += 1
+	
+	post_progress_label.text = "Processing image " + str(saved_imgs) + " / " + str(DATA.size())
+	
+	if saved_imgs >= DATA.size():
+		await get_tree().create_timer(2.0).timeout
+		post_progress_label.hide()
