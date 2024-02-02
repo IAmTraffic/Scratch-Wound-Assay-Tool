@@ -188,9 +188,12 @@ func format_data_for_rendering(data: Array) -> Array:
 				new_data.append(0)
 				new_data.append(0)
 			PIXEL_STATUS.FULL:
-				new_data.append(255)
-				new_data.append(255)
-				new_data.append(255)
+				new_data.append(0)
+				new_data.append(0)
+				new_data.append(0)
+				#new_data.append(255)
+				#new_data.append(255)
+				#new_data.append(255)
 			PIXEL_STATUS.PREVIOUSLY_SEARCHED:
 				new_data.append(0)
 				new_data.append(0)

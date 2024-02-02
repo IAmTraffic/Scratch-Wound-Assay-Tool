@@ -45,6 +45,8 @@ func _on_file_dialog_files_selected(paths):
 	if paths.size() == 0:
 		return
 	
+	threshold_input_field.text = "40"
+	
 	image_processor.show()
 	progress_label.show()
 	post_process_options.hide()
@@ -57,8 +59,9 @@ func _on_file_dialog_files_selected(paths):
 	for i in range(paths.size()):
 		paths[i] = paths[i].replace("\\", "/")
 	PATHS = paths
+	_on_threshold_input_field_text_submitted("40")
 	
-	render_image_flood()
+	#render_image_flood()
 	
 	#Continues in _on_confirm_threshold_btn_pressed
 
@@ -116,10 +119,11 @@ func _on_processing_threshold_slider_value_changed(value):
 #func _on_threshold_input_field_text_changed(new_text: String):
 func _on_threshold_input_field_text_submitted(new_text: String):
 	if new_text.is_valid_int() and int(new_text) >= 0 and int(new_text) <= 256:
+		render_image_flood()
 		#Update the threshold value
-		input_field_just_changed = true
+		#input_field_just_changed = true
 		#processing_threshold_slider.value = float(new_text) / 256.0
-		processing_threshold_slider.value = int(new_text)
+		#processing_threshold_slider.value = int(new_text)
 
 
 
@@ -127,16 +131,16 @@ func _on_threshold_input_field_text_submitted(new_text: String):
 func get_scratch_data(path: String) -> Dictionary:
 	var image := Image.load_from_file(path)
 	print(path)
-	sub_viewport.size = image.get_size()
+	#sub_viewport.size = image.get_size()
 	texture_rect.texture = ImageTexture.create_from_image(image)
 #		flood_image_display.texture = viewport_container.get_node("SubViewport").get_texture()
 	flood_image_display.texture = ImageTexture.create_from_image(image)
 	flood_image_display.material.set_shader_parameter("flood_image", null)
 	
-	#var thread := Thread.new()
-	#return {}
 	
 	return await viewport_container.get_flood_data()
+
+
 
 func _on_csv_download_pressed():
 	print("requesting csv download")
@@ -193,18 +197,37 @@ func _on_save_csv_file_dialog_file_selected(path):
 
 func _on_save_images_file_dialog_dir_selected(dir):
 	for datum in DATA:
-		var new_filename: String = dir + "/" + datum.filename.get_basename() + " Overlay." + datum.filename.get_extension()
-		print("Writing " + new_filename)
-		var file_format_on_disk : Image.Format = Image.load_from_file(datum.filepath).get_format()
-		datum.flood_image.convert(file_format_on_disk)
-		print(datum.flood_image.get_size())
-		print(Image.load_from_file(datum.filepath).get_size())
-		var new_image: Image = mix_images(datum.flood_image, Image.load_from_file(datum.filepath))
-		var err = new_image.save_png(new_filename)
-		if err:
-			printerr(err)
+		#save_img_datum(datum, dir)
+		
+		var thread := Thread.new()
+		thread.start(save_img_thread.bind(datum, dir))
 	
 	
 	print("images downloaded - " + dir)
 
+func save_img_thread(datum: Dictionary, dir) -> void:
+	var new_filename: String = dir + "/" + datum.filename.get_basename() + " Overlay." + datum.filename.get_extension()
+	print("Writing " + new_filename)
+	var file_format_on_disk : Image.Format = Image.load_from_file(datum.filepath).get_format()
+	datum.flood_image.convert(file_format_on_disk)
+	var new_image: Image = mix_images(datum.flood_image, Image.load_from_file(datum.filepath))
+	var err = new_image.save_png(new_filename)
+	if err:
+		printerr(err)
 
+#func save_img_datum(datum: Dictionary, dir) -> void:
+	#print("datum")
+	#await save_img_datum_helper(datum, dir)
+	#
+#func save_img_datum_helper(datum: Dictionary, dir) -> void:
+	#await get_tree().create_timer(0.0).timeout
+	#var new_filename: String = dir + "/" + datum.filename.get_basename() + " Overlay." + datum.filename.get_extension()
+	#print("Writing " + new_filename)
+	#var file_format_on_disk : Image.Format = Image.load_from_file(datum.filepath).get_format()
+	#datum.flood_image.convert(file_format_on_disk)
+	#print(datum.flood_image.get_size())
+	#print(Image.load_from_file(datum.filepath).get_size())
+	#var new_image: Image = mix_images(datum.flood_image, Image.load_from_file(datum.filepath))
+	#var err = new_image.save_png(new_filename)
+	#if err:
+		#printerr(err)
