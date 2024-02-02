@@ -34,9 +34,10 @@ func _ready():
 func _on_load_btn_pressed():
 	file_dialog.show()
 
-func _process(_delta):
-	if Input.is_action_pressed("ui_cancel"):
-		get_tree().quit()
+#func _process(_delta):
+	#DEBUGGING
+	#if Input.is_action_pressed("ui_cancel"):
+		#get_tree().quit()
 
 var PATHS = []
 func _on_file_dialog_files_selected(paths):
@@ -83,6 +84,9 @@ func _on_confirm_threshold_btn_pressed():
 		else:
 			filename = filename[1]
 		
+		var original_img = Image.load_from_file(path)
+		flood_data.image.resize(original_img.get_width(), original_img.get_height())
+		
 		DATA.append({"filename": filename, "filepath": path, "flood_image": flood_data.image, "scratch_percentage_of_image": flood_data.largest_island_size_percentage, "max_width": flood_data.max_width, "min_width": flood_data.min_width, "mean_width": flood_data.mean_width, "median_width": flood_data.median_width})
 	
 	
@@ -93,10 +97,11 @@ func _on_confirm_threshold_btn_pressed():
 #Renders the flooded overlay on the given image path
 func render_image_flood():
 	var flood_data = await get_scratch_data(PATHS[0])
-	var flood_image: Image = flood_data.image
-	var flood_texture = ImageTexture.create_from_image(flood_image)
-	
-	flood_image_display.material.set_shader_parameter("flood_image", flood_texture)
+	if flood_data:
+		var flood_image: Image = flood_data.image
+		var flood_texture = ImageTexture.create_from_image(flood_image)
+		
+		flood_image_display.material.set_shader_parameter("flood_image", flood_texture)
 
 var input_field_just_changed = false	#Used to prevent cycle here:
 #Used to update the render visualization upon threshold slider change
@@ -108,7 +113,8 @@ func _on_processing_threshold_slider_value_changed(value):
 		#threshold_input_field.text = str(int(value * 256))
 	render_image_flood()
 #Used to update the render visualization upon threshold text input change
-func _on_threshold_input_field_text_changed(new_text: String):
+#func _on_threshold_input_field_text_changed(new_text: String):
+func _on_threshold_input_field_text_submitted(new_text: String):
 	if new_text.is_valid_int() and int(new_text) >= 0 and int(new_text) <= 256:
 		#Update the threshold value
 		input_field_just_changed = true
@@ -120,13 +126,15 @@ func _on_threshold_input_field_text_changed(new_text: String):
 #Gets the scratch data, given a path to an image
 func get_scratch_data(path: String) -> Dictionary:
 	var image := Image.load_from_file(path)
+	print(path)
 	sub_viewport.size = image.get_size()
 	texture_rect.texture = ImageTexture.create_from_image(image)
 #		flood_image_display.texture = viewport_container.get_node("SubViewport").get_texture()
 	flood_image_display.texture = ImageTexture.create_from_image(image)
 	flood_image_display.material.set_shader_parameter("flood_image", null)
 	
-	var thread := Thread.new()
+	#var thread := Thread.new()
+	#return {}
 	
 	return await viewport_container.get_flood_data()
 
@@ -189,6 +197,8 @@ func _on_save_images_file_dialog_dir_selected(dir):
 		print("Writing " + new_filename)
 		var file_format_on_disk : Image.Format = Image.load_from_file(datum.filepath).get_format()
 		datum.flood_image.convert(file_format_on_disk)
+		print(datum.flood_image.get_size())
+		print(Image.load_from_file(datum.filepath).get_size())
 		var new_image: Image = mix_images(datum.flood_image, Image.load_from_file(datum.filepath))
 		var err = new_image.save_png(new_filename)
 		if err:

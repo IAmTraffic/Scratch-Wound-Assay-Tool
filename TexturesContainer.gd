@@ -13,11 +13,16 @@ enum PIXEL_STATUS {
 
 #The heart and soul
 func get_flood_data() -> Dictionary:
+	show()
+	
+	
 	await get_tree().create_timer(0.2).timeout
 	
-	
 	var texture: ViewportTexture = viewport.get_texture()
+	hide()
 	var image: Image = texture.get_image()
+	image.resize(256, 256, Image.INTERPOLATE_NEAREST)
+	#image.resize(256, (256.0 / float(image.get_width())) * image.get_height())
 	var data_packed = image.get_data()
 	var data = Array(data_packed)
 	
@@ -96,8 +101,7 @@ func get_flood_data() -> Dictionary:
 	#Image cleanup
 	data = format_data_for_rendering(data)
 	var flood_image: Image = Image.create_from_data(image.get_width(), image.get_height(), image.has_mipmaps(), image.get_format(), PackedByteArray(data))
-	
-	
+	flood_image.resize(viewport.get_texture().get_image().get_width(), viewport.get_texture().get_image().get_height())
 	
 	return {"image": flood_image, "largest_island_size_percentage": largest_island_size_percentage, "largest_island_seed_index": largest_island_seed_index, "max_width": max_line_width, "min_width": min_line_width, "mean_width": mean_line_width, "median_width": median_line_width}
 
@@ -168,6 +172,7 @@ func format_data_for_analysis(data: Array) -> Array:
 			[255, 255, 255]:
 				new_data.append(PIXEL_STATUS.FULL)
 			_:
+				new_data.append(PIXEL_STATUS.EMPTY)
 				printerr("Bad datum for analysis " + str(datum_color))
 	
 	return new_data

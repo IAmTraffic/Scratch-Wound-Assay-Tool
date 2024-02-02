@@ -67,22 +67,18 @@ size_flags_vertical = 3
 
 [node name="SubViewportContainer" type="SubViewportContainer" parent="VBoxContainer/ImageProcessing"]
 layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -256.0
-offset_top = -256.0
-offset_right = 256.0
-offset_bottom = 256.0
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+stretch = true
 script = ExtResource("2_kcg4b")
 
 [node name="SubViewport" type="SubViewport" parent="VBoxContainer/ImageProcessing/SubViewportContainer"]
 unique_name_in_owner = true
 handle_input_locally = false
+size = Vector2i(1152, 613)
 render_target_update_mode = 4
 
 [node name="TextureRect" type="TextureRect" parent="VBoxContainer/ImageProcessing/SubViewportContainer/SubViewport"]
@@ -92,6 +88,9 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+expand_mode = 1
 
 [node name="Sobel" type="CanvasLayer" parent="VBoxContainer/ImageProcessing/SubViewportContainer/SubViewport"]
 
@@ -144,16 +143,6 @@ grow_horizontal = 2
 grow_vertical = 2
 color = Color(0.262745, 0.262745, 0.262745, 1)
 
-[node name="Flood Image Display" type="TextureRect" parent="VBoxContainer/ImageProcessing"]
-unique_name_in_owner = true
-material = SubResource("ShaderMaterial_hieuy")
-layout_mode = 1
-anchors_preset = -1
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-
 [node name="FileDialog" type="FileDialog" parent="VBoxContainer/ImageProcessing"]
 title = "Open File(s)"
 position = Vector2i(300, 100)
@@ -161,34 +150,47 @@ size = Vector2i(500, 400)
 ok_button_text = "Open"
 file_mode = 1
 access = 2
-filters = PackedStringArray("*.png", "*.jpg", "*.jpeg")
+filters = PackedStringArray("*.png, *.jpg, *.jpeg")
 use_native_dialog = true
 
-[node name="Threshold Adjustments" type="VBoxContainer" parent="VBoxContainer/ImageProcessing"]
+[node name="MarginContainer" type="MarginContainer" parent="VBoxContainer/ImageProcessing"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 20
+
+[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer/ImageProcessing/MarginContainer"]
+layout_mode = 2
+
+[node name="Threshold Adjustments" type="VBoxContainer" parent="VBoxContainer/ImageProcessing/MarginContainer/HBoxContainer"]
 unique_name_in_owner = true
 visible = false
-layout_mode = 1
-anchors_preset = -1
-anchor_left = 0.045
-anchor_top = 0.375
-anchor_right = 0.185
-anchor_bottom = 0.477
-
-[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer/ImageProcessing/Threshold Adjustments"]
+custom_minimum_size = Vector2(160, 0)
 layout_mode = 2
+alignment = 1
 
-[node name="ThresholdInputField" type="LineEdit" parent="VBoxContainer/ImageProcessing/Threshold Adjustments/HBoxContainer"]
+[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer/ImageProcessing/MarginContainer/HBoxContainer/Threshold Adjustments"]
+layout_mode = 2
+alignment = 1
+
+[node name="ThresholdInputField" type="LineEdit" parent="VBoxContainer/ImageProcessing/MarginContainer/HBoxContainer/Threshold Adjustments/HBoxContainer"]
 unique_name_in_owner = true
 layout_mode = 2
 
-[node name="Label" type="Label" parent="VBoxContainer/ImageProcessing/Threshold Adjustments/HBoxContainer"]
+[node name="Label" type="Label" parent="VBoxContainer/ImageProcessing/MarginContainer/HBoxContainer/Threshold Adjustments/HBoxContainer"]
 layout_mode = 2
-size_flags_horizontal = 3
 text = "/ 256"
 horizontal_alignment = 1
 
-[node name="ProcessingThresholdSlider" type="HSlider" parent="VBoxContainer/ImageProcessing/Threshold Adjustments"]
+[node name="ProcessingThresholdSlider" type="HSlider" parent="VBoxContainer/ImageProcessing/MarginContainer/HBoxContainer/Threshold Adjustments"]
 unique_name_in_owner = true
+visible = false
 layout_mode = 2
 size_flags_vertical = 2
 max_value = 256.0
@@ -196,11 +198,25 @@ value = 64.0
 tick_count = 6
 ticks_on_borders = true
 
-[node name="ConfirmThresholdBtn" type="Button" parent="VBoxContainer/ImageProcessing/Threshold Adjustments"]
+[node name="ConfirmThresholdBtn" type="Button" parent="VBoxContainer/ImageProcessing/MarginContainer/HBoxContainer/Threshold Adjustments"]
 unique_name_in_owner = true
 layout_mode = 2
-size_flags_vertical = 3
 text = "Confirm"
+
+[node name="MarginContainer" type="MarginContainer" parent="VBoxContainer/ImageProcessing/MarginContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/margin_left = 30
+theme_override_constants/margin_top = 30
+theme_override_constants/margin_right = 30
+theme_override_constants/margin_bottom = 30
+
+[node name="Flood Image Display" type="TextureRect" parent="VBoxContainer/ImageProcessing/MarginContainer/HBoxContainer/MarginContainer"]
+unique_name_in_owner = true
+material = SubResource("ShaderMaterial_hieuy")
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 5
 
 [node name="Post Process Options" type="Control" parent="VBoxContainer"]
 unique_name_in_owner = true
@@ -274,10 +290,10 @@ use_native_dialog = true
 
 [connection signal="pressed" from="VBoxContainer/HBoxContainer/LoadBtn" to="." method="_on_load_btn_pressed"]
 [connection signal="files_selected" from="VBoxContainer/ImageProcessing/FileDialog" to="." method="_on_file_dialog_files_selected"]
-[connection signal="text_changed" from="VBoxContainer/ImageProcessing/Threshold Adjustments/HBoxContainer/ThresholdInputField" to="." method="_on_threshold_input_field_text_changed"]
-[connection signal="value_changed" from="VBoxContainer/ImageProcessing/Threshold Adjustments/ProcessingThresholdSlider" to="." method="_on_processing_threshold_slider_value_changed"]
-[connection signal="value_changed" from="VBoxContainer/ImageProcessing/Threshold Adjustments/ProcessingThresholdSlider" to="VBoxContainer/ImageProcessing/SubViewportContainer" method="_on_processing_threshold_slider_value_changed"]
-[connection signal="pressed" from="VBoxContainer/ImageProcessing/Threshold Adjustments/ConfirmThresholdBtn" to="." method="_on_confirm_threshold_btn_pressed"]
+[connection signal="text_submitted" from="VBoxContainer/ImageProcessing/MarginContainer/HBoxContainer/Threshold Adjustments/HBoxContainer/ThresholdInputField" to="." method="_on_threshold_input_field_text_submitted"]
+[connection signal="value_changed" from="VBoxContainer/ImageProcessing/MarginContainer/HBoxContainer/Threshold Adjustments/ProcessingThresholdSlider" to="." method="_on_processing_threshold_slider_value_changed"]
+[connection signal="value_changed" from="VBoxContainer/ImageProcessing/MarginContainer/HBoxContainer/Threshold Adjustments/ProcessingThresholdSlider" to="VBoxContainer/ImageProcessing/SubViewportContainer" method="_on_processing_threshold_slider_value_changed"]
+[connection signal="pressed" from="VBoxContainer/ImageProcessing/MarginContainer/HBoxContainer/Threshold Adjustments/ConfirmThresholdBtn" to="." method="_on_confirm_threshold_btn_pressed"]
 [connection signal="pressed" from="VBoxContainer/Post Process Options/MarginContainer/GridContainer/CSVDownload" to="." method="_on_csv_download_pressed"]
 [connection signal="pressed" from="VBoxContainer/Post Process Options/MarginContainer/GridContainer/ImagesDownload" to="." method="_on_images_download_pressed"]
 [connection signal="file_selected" from="SaveCSVFileDialog" to="." method="_on_save_csv_file_dialog_file_selected"]
