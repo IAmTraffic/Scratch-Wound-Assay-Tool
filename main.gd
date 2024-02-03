@@ -74,6 +74,7 @@ func _on_file_dialog_files_selected(paths):
 func _on_confirm_threshold_btn_pressed():
 	threshold_adjustments.hide()
 	flood_image_display.hide()
+	progress_label.show()
 	
 	DATA = []
 	for i in range(PATHS.size()):
