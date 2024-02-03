@@ -52,7 +52,7 @@ func _on_file_dialog_files_selected(paths):
 	threshold_input_field.text = "40"
 	
 	image_processor.show()
-	progress_label.show()
+	#progress_label.show()
 	post_process_options.hide()
 	
 	threshold_adjustments.show()
@@ -200,19 +200,26 @@ func _on_save_csv_file_dialog_file_selected(path: String):
 	await get_tree().create_timer(2.0).timeout
 	post_progress_label.hide()
 
-
+var threads: Dictionary
+var thread_batch_size = 10
 func _on_save_images_file_dialog_dir_selected(dir):
+	threads = {}
 	saved_imgs = 0
 	post_progress_label.text = "Processing image " + str(saved_imgs) + " / " + str(DATA.size())
 	post_progress_label.show()
-	for datum in DATA:
+	for i in range(DATA.size()):
+	#for datum in DATA:
 		var thread := Thread.new()
-		thread.start(save_img_thread.bind(datum, dir, thread))
+		threads[i] = thread
+	
+	for i in range(min(threads.size(), thread_batch_size)):
+		var thread: Thread = threads[i]
+		thread.start(save_img_thread.bind(DATA[i], dir, i))
 	
 	
 	print("images downloaded - " + dir)
 
-func save_img_thread(datum: Dictionary, dir, thread: Thread) -> void:
+func save_img_thread(datum: Dictionary, dir, thread_index: int) -> void:
 	var new_filename: String = dir + "/" + datum.filename.get_basename() + " Overlay." + datum.filename.get_extension()
 	print("Writing " + new_filename)
 	var file_format_on_disk : Image.Format = Image.load_from_file(datum.filepath).get_format()
@@ -221,14 +228,19 @@ func save_img_thread(datum: Dictionary, dir, thread: Thread) -> void:
 	var err = new_image.save_png(new_filename)
 	if err:
 		printerr(err)
-	call_deferred("emit_signal", "image_saved", thread)
+	call_deferred("emit_signal", "image_saved", thread_index, dir)
 
 var saved_imgs = 0
-func _on_img_save_thread_complete(thread: Thread):
+func _on_img_save_thread_complete(thread_index: int, dir):
+	var thread: Thread = threads[thread_index]
 	thread.wait_to_finish()
 	saved_imgs += 1
 	
 	post_progress_label.text = "Processing image " + str(saved_imgs) + " / " + str(DATA.size())
+	
+	#Start next thread, if it exits
+	if(thread_index + thread_batch_size < threads.size()):
+		threads[thread_index + thread_batch_size].start(save_img_thread.bind(DATA[thread_index + thread_batch_size], dir, thread_index + thread_batch_size))
 	
 	if saved_imgs >= DATA.size():
 		await get_tree().create_timer(2.0).timeout
