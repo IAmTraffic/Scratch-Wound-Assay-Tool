@@ -127,7 +127,7 @@ func _on_threshold_input_field_text_submitted(new_text: String):
 		#Update the threshold value
 		#input_field_just_changed = true
 		#processing_threshold_slider.value = float(new_text) / 256.0
-		#processing_threshold_slider.value = int(new_text)
+		processing_threshold_slider.value = int(new_text)
 
 
 
