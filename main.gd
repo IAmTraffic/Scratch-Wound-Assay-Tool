@@ -169,6 +169,14 @@ func _on_next_image_btn_pressed():
 	
 	render_image_flood(CURRENT_IMAGE_INDEX)
 
+
+func _on_prev_image_btn_pressed():
+	if CURRENT_IMAGE_INDEX == 0:
+		return
+	
+	CURRENT_IMAGE_INDEX -= 1
+	render_image_flood(CURRENT_IMAGE_INDEX)
+
 #Renders the flooded overlay on the given image path
 func render_image_flood(index: int):
 	if index >= PATHS.size():
@@ -318,4 +326,6 @@ func _on_img_save_thread_complete(thread_index: int, dir):
 	if saved_imgs >= DATA.size():
 		await get_tree().create_timer(2.0).timeout
 		post_progress_label.hide()
+
+
 

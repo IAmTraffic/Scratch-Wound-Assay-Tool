@@ -209,7 +209,15 @@ visible = false
 layout_mode = 2
 text = "Confirm"
 
-[node name="NextImageBtn" type="Button" parent="VBoxContainer/ImageProcessing/MarginContainer/HBoxContainer/Threshold Adjustments"]
+[node name="HBoxContainer2" type="HBoxContainer" parent="VBoxContainer/ImageProcessing/MarginContainer/HBoxContainer/Threshold Adjustments"]
+layout_mode = 2
+
+[node name="PrevImageBtn" type="Button" parent="VBoxContainer/ImageProcessing/MarginContainer/HBoxContainer/Threshold Adjustments/HBoxContainer2"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Prev"
+
+[node name="NextImageBtn" type="Button" parent="VBoxContainer/ImageProcessing/MarginContainer/HBoxContainer/Threshold Adjustments/HBoxContainer2"]
 unique_name_in_owner = true
 layout_mode = 2
 text = "Next"
@@ -320,7 +328,8 @@ use_native_dialog = true
 [connection signal="value_changed" from="VBoxContainer/ImageProcessing/MarginContainer/HBoxContainer/Threshold Adjustments/ProcessingThresholdSlider" to="." method="_on_processing_threshold_slider_value_changed"]
 [connection signal="value_changed" from="VBoxContainer/ImageProcessing/MarginContainer/HBoxContainer/Threshold Adjustments/ProcessingThresholdSlider" to="VBoxContainer/ImageProcessing/SubViewportContainer" method="_on_processing_threshold_slider_value_changed"]
 [connection signal="pressed" from="VBoxContainer/ImageProcessing/MarginContainer/HBoxContainer/Threshold Adjustments/ConfirmThresholdBtn" to="." method="_on_confirm_threshold_btn_pressed"]
-[connection signal="pressed" from="VBoxContainer/ImageProcessing/MarginContainer/HBoxContainer/Threshold Adjustments/NextImageBtn" to="." method="_on_next_image_btn_pressed"]
+[connection signal="pressed" from="VBoxContainer/ImageProcessing/MarginContainer/HBoxContainer/Threshold Adjustments/HBoxContainer2/PrevImageBtn" to="." method="_on_prev_image_btn_pressed"]
+[connection signal="pressed" from="VBoxContainer/ImageProcessing/MarginContainer/HBoxContainer/Threshold Adjustments/HBoxContainer2/NextImageBtn" to="." method="_on_next_image_btn_pressed"]
 [connection signal="pressed" from="VBoxContainer/Post Process Options/MarginContainer/GridContainer/CSVDownload" to="." method="_on_csv_download_pressed"]
 [connection signal="pressed" from="VBoxContainer/Post Process Options/MarginContainer/GridContainer/ImagesDownload" to="." method="_on_images_download_pressed"]
 [connection signal="file_selected" from="SaveCSVFileDialog" to="." method="_on_save_csv_file_dialog_file_selected"]
