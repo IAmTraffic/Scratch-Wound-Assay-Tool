@@ -205,8 +205,14 @@ ticks_on_borders = true
 
 [node name="ConfirmThresholdBtn" type="Button" parent="VBoxContainer/ImageProcessing/MarginContainer/HBoxContainer/Threshold Adjustments"]
 unique_name_in_owner = true
+visible = false
 layout_mode = 2
 text = "Confirm"
+
+[node name="NextImageBtn" type="Button" parent="VBoxContainer/ImageProcessing/MarginContainer/HBoxContainer/Threshold Adjustments"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Next"
 
 [node name="MarginContainer" type="MarginContainer" parent="VBoxContainer/ImageProcessing/MarginContainer/HBoxContainer"]
 layout_mode = 2
@@ -314,6 +320,7 @@ use_native_dialog = true
 [connection signal="value_changed" from="VBoxContainer/ImageProcessing/MarginContainer/HBoxContainer/Threshold Adjustments/ProcessingThresholdSlider" to="." method="_on_processing_threshold_slider_value_changed"]
 [connection signal="value_changed" from="VBoxContainer/ImageProcessing/MarginContainer/HBoxContainer/Threshold Adjustments/ProcessingThresholdSlider" to="VBoxContainer/ImageProcessing/SubViewportContainer" method="_on_processing_threshold_slider_value_changed"]
 [connection signal="pressed" from="VBoxContainer/ImageProcessing/MarginContainer/HBoxContainer/Threshold Adjustments/ConfirmThresholdBtn" to="." method="_on_confirm_threshold_btn_pressed"]
+[connection signal="pressed" from="VBoxContainer/ImageProcessing/MarginContainer/HBoxContainer/Threshold Adjustments/NextImageBtn" to="." method="_on_next_image_btn_pressed"]
 [connection signal="pressed" from="VBoxContainer/Post Process Options/MarginContainer/GridContainer/CSVDownload" to="." method="_on_csv_download_pressed"]
 [connection signal="pressed" from="VBoxContainer/Post Process Options/MarginContainer/GridContainer/ImagesDownload" to="." method="_on_images_download_pressed"]
 [connection signal="file_selected" from="SaveCSVFileDialog" to="." method="_on_save_csv_file_dialog_file_selected"]

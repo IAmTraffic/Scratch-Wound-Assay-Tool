@@ -19,6 +19,8 @@ extends Control
 signal image_saved(thread: Thread)
 
 var DATA = []
+var CURRENT_IMAGE_DATA = {}
+var CURRENT_IMAGE_INDEX = 0
 const DOWNLOAD_FLOOD_OVERLAY_MIX_WEIGHT = 0.8
 
 ## TODO
@@ -46,6 +48,7 @@ func _on_load_btn_pressed():
 
 var PATHS = []
 func _on_file_dialog_files_selected(paths):
+	CURRENT_IMAGE_INDEX = 0
 	PATHS = []
 	if paths.size() == 0:
 		return
@@ -72,33 +75,75 @@ func _on_file_dialog_files_selected(paths):
 
 #Continuation of _on_file_dialog_files_selected, once the threshold is locked in
 #At this point, we do the actual calculations
-func _on_confirm_threshold_btn_pressed():
-	threshold_adjustments.hide()
-	flood_image_display.hide()
-	progress_label.show()
+#func _on_confirm_threshold_btn_pressed():
+	#threshold_adjustments.hide()
+	#flood_image_display.hide()
+	#progress_label.show()
+	#
+	#DATA = []
+	#for i in range(PATHS.size()):
+		#progress_label.text = "Processing image " + str(i + 1) + "/" + str(PATHS.size())
+		#
+		#var path = PATHS[i]
+		#
+		#var filename = path.rsplit("/", true, 1)
+		#if filename.size() == 1:
+			#filename = str(path.rsplit("\\", true, 1)[1])
+		#else:
+			#filename = filename[1]
+		#
+		#var datum = {
+			#"filename": filename,
+			#"filepath": path,
+			#"threshold": int(256 * threshold_rect.material.get_shader_parameter("threshold"))
+		#}
+		#
+		#var flood_data = await get_scratch_data(path)
+		#
+		##print(flood_data)
+		#
+		#var original_img = Image.load_from_file(path)
+		#flood_data.image.resize(original_img.get_width(), original_img.get_height())
+		#
+		#datum.flood_image = flood_data.image
+		#datum.scratch_percentage_of_image = flood_data.largest_island_size_percentage
+		#datum.max_width = flood_data.max_width
+		#datum.min_width = flood_data.min_width
+		#datum.mean_width = flood_data.mean_width
+		#datum.median_width = flood_data.median_width
+		#
+		#print(datum)
+		#DATA.append(datum)
+		##DATA.append({"filename": filename, "filepath": path, "flood_image": flood_data.image, "scratch_percentage_of_image": flood_data.largest_island_size_percentage, "max_width": flood_data.max_width, "min_width": flood_data.min_width, "mean_width": flood_data.mean_width, "median_width": flood_data.median_width})
+	#
+	#
+	#image_processor.hide()
+	#progress_label.hide()
+	#post_process_options.show()
+
+func _on_next_image_btn_pressed():
+	if CURRENT_IMAGE_INDEX >= PATHS.size():
+		image_processor.hide()
+		progress_label.hide()
+		post_process_options.show()
+		return
 	
-	DATA = []
-	for i in range(PATHS.size()):
-		progress_label.text = "Processing image " + str(i + 1) + "/" + str(PATHS.size())
-		
-		var path = PATHS[i]
-		
-		var filename = path.rsplit("/", true, 1)
-		if filename.size() == 1:
-			filename = str(path.rsplit("\\", true, 1)[1])
-		else:
-			filename = filename[1]
-		
-		var datum = {
-			"filename": filename,
-			"filepath": path,
-			"threshold": int(256 * threshold_rect.material.get_shader_parameter("threshold"))
-		}
-		
-		var flood_data = await get_scratch_data(path)
-		
-		#print(flood_data)
-		
+	var path = PATHS[CURRENT_IMAGE_INDEX]
+	
+	var filename = path.rsplit("/", true, 1)
+	if filename.size() == 1:
+		filename = str(path.rsplit("\\", true, 1)[1])
+	else:
+		filename = filename[1]
+	
+	var datum = {
+		"filename": filename,
+		"filepath": path,
+		"threshold": int(256 * threshold_rect.material.get_shader_parameter("threshold"))
+	}
+	
+	var flood_data = CURRENT_IMAGE_DATA
+	if flood_data:
 		var original_img = Image.load_from_file(path)
 		flood_data.image.resize(original_img.get_width(), original_img.get_height())
 		
@@ -110,41 +155,52 @@ func _on_confirm_threshold_btn_pressed():
 		datum.median_width = flood_data.median_width
 		
 		print(datum)
-		DATA.append(datum)
-		#DATA.append({"filename": filename, "filepath": path, "flood_image": flood_data.image, "scratch_percentage_of_image": flood_data.largest_island_size_percentage, "max_width": flood_data.max_width, "min_width": flood_data.min_width, "mean_width": flood_data.mean_width, "median_width": flood_data.median_width})
+		if CURRENT_IMAGE_INDEX >= DATA.size():
+			DATA.append(datum)
+		else:
+			DATA[CURRENT_IMAGE_INDEX] = datum
+	CURRENT_IMAGE_INDEX += 1
 	
+	if CURRENT_IMAGE_INDEX >= PATHS.size():
+		image_processor.hide()
+		progress_label.hide()
+		post_process_options.show()
+		return
 	
-	image_processor.hide()
-	progress_label.hide()
-	post_process_options.show()
+	render_image_flood(CURRENT_IMAGE_INDEX)
 
 #Renders the flooded overlay on the given image path
-func render_image_flood():
-	var flood_data = await get_scratch_data(PATHS[0])
+func render_image_flood(index: int):
+	if index >= PATHS.size():
+		return
+	var flood_data = await get_scratch_data(PATHS[index])
 	if flood_data:
 		var flood_image: Image = flood_data.image
 		var flood_texture = ImageTexture.create_from_image(flood_image)
 		
 		flood_image_display.material.set_shader_parameter("flood_image", flood_texture)
+		
+		CURRENT_IMAGE_DATA = flood_data
 
 var input_field_just_changed = false	#Used to prevent cycle here:
 #Used to update the render visualization upon threshold slider change
-func _on_processing_threshold_slider_value_changed(value):
-	if input_field_just_changed:
-		input_field_just_changed = false
-	else:
-		threshold_input_field.text = str(value)
-		#threshold_input_field.text = str(int(value * 256))
-	render_image_flood()
+#func _on_processing_threshold_slider_value_changed(value):
+	#if input_field_just_changed:
+		#input_field_just_changed = false
+	#else:
+		#threshold_input_field.text = str(value)
+		##threshold_input_field.text = str(int(value * 256))
+	#render_image_flood()
 #Used to update the render visualization upon threshold text input change
 #func _on_threshold_input_field_text_changed(new_text: String):
 func _on_threshold_input_field_text_submitted(new_text: String):
 	if new_text.is_valid_int() and int(new_text) >= 0 and int(new_text) <= 256:
-		render_image_flood()
+		render_image_flood(CURRENT_IMAGE_INDEX)
+		viewport_container.threshold_value_changed(int(new_text))
 		#Update the threshold value
 		#input_field_just_changed = true
 		#processing_threshold_slider.value = float(new_text) / 256.0
-		processing_threshold_slider.value = int(new_text)
+		#processing_threshold_slider.value = int(new_text)
 
 
 
@@ -262,3 +318,4 @@ func _on_img_save_thread_complete(thread_index: int, dir):
 	if saved_imgs >= DATA.size():
 		await get_tree().create_timer(2.0).timeout
 		post_progress_label.hide()
+

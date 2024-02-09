@@ -208,6 +208,7 @@ func format_data_for_rendering(data: Array) -> Array:
 	return new_data
 
 #Used by the user to fine tune the thresholding value for processing
-func _on_processing_threshold_slider_value_changed(value):
+func threshold_value_changed(value):
+#func _on_processing_threshold_slider_value_changed(value):
 	#threshold_rect.material.set_shader_parameter("threshold", int(value))
 	threshold_rect.material.set_shader_parameter("threshold", (float(value) / 256.0))
