@@ -14,6 +14,7 @@ extends Control
 @onready var threshold_input_field = %ThresholdInputField
 @onready var processing_threshold_slider = %ProcessingThresholdSlider
 @onready var post_progress_label = %"Progress Label"
+@onready var threshold_rect = %ThresholdRect
 
 signal image_saved(thread: Thread)
 
@@ -82,20 +83,35 @@ func _on_confirm_threshold_btn_pressed():
 		
 		var path = PATHS[i]
 		
-		var flood_data = await get_scratch_data(path)
-		
-		print(flood_data)
-		
 		var filename = path.rsplit("/", true, 1)
 		if filename.size() == 1:
 			filename = str(path.rsplit("\\", true, 1)[1])
 		else:
 			filename = filename[1]
 		
+		var datum = {
+			"filename": filename,
+			"filepath": path,
+			"threshold": int(256 * threshold_rect.material.get_shader_parameter("threshold"))
+		}
+		
+		var flood_data = await get_scratch_data(path)
+		
+		#print(flood_data)
+		
 		var original_img = Image.load_from_file(path)
 		flood_data.image.resize(original_img.get_width(), original_img.get_height())
 		
-		DATA.append({"filename": filename, "filepath": path, "flood_image": flood_data.image, "scratch_percentage_of_image": flood_data.largest_island_size_percentage, "max_width": flood_data.max_width, "min_width": flood_data.min_width, "mean_width": flood_data.mean_width, "median_width": flood_data.median_width})
+		datum.flood_image = flood_data.image
+		datum.scratch_percentage_of_image = flood_data.largest_island_size_percentage
+		datum.max_width = flood_data.max_width
+		datum.min_width = flood_data.min_width
+		datum.mean_width = flood_data.mean_width
+		datum.median_width = flood_data.median_width
+		
+		print(datum)
+		DATA.append(datum)
+		#DATA.append({"filename": filename, "filepath": path, "flood_image": flood_data.image, "scratch_percentage_of_image": flood_data.largest_island_size_percentage, "max_width": flood_data.max_width, "min_width": flood_data.min_width, "mean_width": flood_data.mean_width, "median_width": flood_data.median_width})
 	
 	
 	image_processor.hide()

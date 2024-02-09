@@ -79,7 +79,7 @@ script = ExtResource("2_kcg4b")
 [node name="SubViewport" type="SubViewport" parent="VBoxContainer/ImageProcessing/SubViewportContainer"]
 unique_name_in_owner = true
 handle_input_locally = false
-size = Vector2i(1152, 304)
+size = Vector2i(2, 2)
 render_target_update_mode = 0
 
 [node name="TextureRect" type="TextureRect" parent="VBoxContainer/ImageProcessing/SubViewportContainer/SubViewport"]
