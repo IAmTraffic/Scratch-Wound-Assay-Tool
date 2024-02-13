@@ -69,8 +69,11 @@ func get_flood_data() -> Dictionary:
 	var max_line_width : float = 0
 	var min_line_width : float = image.get_width()
 	var mean_line_width : float = 0
+	var mean_line_start : float = 0
+	var mean_line_end : float = 0
 	var line_sizes : Array = []
 	for key in lines.keys():
+		lines[key].sort()
 		var line_size = lines[key].size()
 		
 		#Max
@@ -84,9 +87,15 @@ func get_flood_data() -> Dictionary:
 		
 		#Median
 		line_sizes.append(lines[key].size())
+		
+		#Mean start / end
+		mean_line_start += lines[key][0]
+		mean_line_end += lines[key][lines[key].size() - 1]
 	
 	#Stats cleanup
 	mean_line_width /= lines.size()
+	mean_line_start /= lines.size()
+	mean_line_end /= lines.size()
 	
 	line_sizes.sort()
 	var median_line_width : float = line_sizes[int(line_sizes.size() / 2.0)]
@@ -96,6 +105,9 @@ func get_flood_data() -> Dictionary:
 	min_line_width /= image.get_width()
 	mean_line_width /= image.get_width()
 	median_line_width /= image.get_width()
+	mean_line_start /= image.get_width()
+	mean_line_end /= image.get_width()
+	var mean_line_middle = mean_line_end - mean_line_start
 	var largest_island_size_percentage = float(largest_island_size) / float(image.get_width() * image.get_height())
 	
 	#Image cleanup
@@ -103,7 +115,9 @@ func get_flood_data() -> Dictionary:
 	var flood_image: Image = Image.create_from_data(image.get_width(), image.get_height(), image.has_mipmaps(), image.get_format(), PackedByteArray(data))
 	flood_image.resize(viewport.get_texture().get_image().get_width(), viewport.get_texture().get_image().get_height())
 	
-	return {"image": flood_image, "largest_island_size_percentage": largest_island_size_percentage, "largest_island_seed_index": largest_island_seed_index, "max_width": max_line_width, "min_width": min_line_width, "mean_width": mean_line_width, "median_width": median_line_width}
+	return {"image": flood_image, "largest_island_size_percentage": largest_island_size_percentage, "largest_island_seed_index": largest_island_seed_index, "max_width": max_line_width, "min_width": min_line_width, "mean_width": mean_line_width, "median_width": median_line_width, "mean_middle": mean_line_middle, "mean_start": mean_line_start, "mean_end": mean_line_end}
+	#return {"image": flood_image, "largest_island_size_percentage": largest_island_size_percentage, "largest_island_seed_index": largest_island_seed_index, "max_width": max_line_width, "min_width": min_line_width, "mean_width": mean_line_width, "median_width": median_line_width, "mean_middle": mean_line_middle}
+	#return {"image": flood_image, "largest_island_size_percentage": largest_island_size_percentage, "largest_island_seed_index": largest_island_seed_index, "max_width": max_line_width, "min_width": min_line_width, "mean_width": mean_line_width, "median_width": median_line_width, "mean_start": mean_line_start, "mean_end": mean_line_end}
 
 
 #Returns the pixel indices of a new empty island

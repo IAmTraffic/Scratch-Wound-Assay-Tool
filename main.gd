@@ -23,28 +23,12 @@ var CURRENT_IMAGE_DATA = {}
 var CURRENT_IMAGE_INDEX = 0
 const DOWNLOAD_FLOOD_OVERLAY_MIX_WEIGHT = 0.8
 
-## TODO
-# image processing should be multithreaded
-	# and those threads should be culled in the threshold selection phase
-# other optimisations?
-# add gallery of processed images after processing / before downloading? 
-#
-# add bars to image to represent the edges of the scratch?
 
 func _ready():
 	connect("image_saved", _on_img_save_thread_complete)
-	
-	pass
-	#DEBUG
-#	_on_file_dialog_files_selected(["res://test scratch wound assay/Screenshot 2023-11-16 233333.png"])
 
 func _on_load_btn_pressed():
 	file_dialog.show()
-
-#func _process(_delta):
-	#DEBUGGING
-	#if Input.is_action_pressed("ui_cancel"):
-		#get_tree().quit()
 
 var PATHS = []
 func _on_file_dialog_files_selected(paths):
@@ -56,7 +40,6 @@ func _on_file_dialog_files_selected(paths):
 	threshold_input_field.text = "40"
 	
 	image_processor.show()
-	#progress_label.show()
 	post_process_options.hide()
 	
 	threshold_adjustments.show()
@@ -153,6 +136,9 @@ func _on_next_image_btn_pressed():
 		datum.min_width = flood_data.min_width
 		datum.mean_width = flood_data.mean_width
 		datum.median_width = flood_data.median_width
+		datum.mean_start = flood_data.mean_start
+		datum.mean_end = flood_data.mean_end
+		datum.mean_middle = flood_data.mean_middle
 		
 		print(datum)
 		if CURRENT_IMAGE_INDEX >= DATA.size():
@@ -190,25 +176,10 @@ func render_image_flood(index: int):
 		
 		CURRENT_IMAGE_DATA = flood_data
 
-var input_field_just_changed = false	#Used to prevent cycle here:
-#Used to update the render visualization upon threshold slider change
-#func _on_processing_threshold_slider_value_changed(value):
-	#if input_field_just_changed:
-		#input_field_just_changed = false
-	#else:
-		#threshold_input_field.text = str(value)
-		##threshold_input_field.text = str(int(value * 256))
-	#render_image_flood()
-#Used to update the render visualization upon threshold text input change
-#func _on_threshold_input_field_text_changed(new_text: String):
 func _on_threshold_input_field_text_submitted(new_text: String):
 	if new_text.is_valid_int() and int(new_text) >= 0 and int(new_text) <= 256:
 		render_image_flood(CURRENT_IMAGE_INDEX)
 		viewport_container.threshold_value_changed(int(new_text))
-		#Update the threshold value
-		#input_field_just_changed = true
-		#processing_threshold_slider.value = float(new_text) / 256.0
-		#processing_threshold_slider.value = int(new_text)
 
 
 
@@ -216,9 +187,7 @@ func _on_threshold_input_field_text_submitted(new_text: String):
 func get_scratch_data(path: String) -> Dictionary:
 	var image := Image.load_from_file(path)
 	print(path)
-	#sub_viewport.size = image.get_size()
 	texture_rect.texture = ImageTexture.create_from_image(image)
-#		flood_image_display.texture = viewport_container.get_node("SubViewport").get_texture()
 	flood_image_display.texture = ImageTexture.create_from_image(image)
 	flood_image_display.material.set_shader_parameter("flood_image", null)
 	
@@ -258,6 +227,38 @@ func mix_images(image_1: Image, image_2: Image) -> Image:
 	var mixed_image : Image = Image.create_from_data(image_1.get_width(), image_1.get_height(), image_1.has_mipmaps(), image_1.get_format(), PackedByteArray(mixed_data_array))
 	return mixed_image
 
+#Overlays vertical bars at the average scratch sides
+func bar_image(image: Image, middle_x: float, radius_x: float, n, mean_start, mean_end) -> Image:
+#func bar_image(image: Image, first_x: float, second_x: float) -> Image:
+	var line_radius: int = int(image.get_width() / 200.0)
+	var line_color = Color(0.0, 1.0, 0.0, 0.5)
+	
+	middle_x *= image.get_width()
+	radius_x *= image.get_width()
+	mean_start *= image.get_width()
+	mean_end *= image.get_width()
+	#first_x *= image.get_width()
+	#second_x *= image.get_width()
+	var first_x = mean_start
+	var second_x = mean_end
+	#var first_x = middle_x - radius_x
+	#var second_x = middle_x + radius_x
+	
+	print(n)
+	print(str(image.get_width()) + ", " + str(image.get_height()))
+	print(str(mean_start) + " -> " + str(mean_end))
+	print(mean_end - mean_start)
+	print(middle_x)
+	print(radius_x)
+	print(first_x)
+	print(second_x)
+	print("")
+	
+	image.fill_rect(Rect2i(Vector2i(middle_x - line_radius, 0), Vector2i(line_radius * 2.0, image.get_height())), Color(0.0, 0.0, 1.0))
+	image.fill_rect(Rect2i(Vector2i(first_x - line_radius, 0), Vector2i(line_radius * 2, image.get_height())), line_color)
+	image.fill_rect(Rect2i(Vector2i(second_x - line_radius, 0), Vector2i(line_radius * 2, image.get_height())), line_color)
+	
+	return image
 
 func _on_save_csv_file_dialog_file_selected(path: String):
 	post_progress_label.text = "Saving data: " + path
@@ -282,14 +283,13 @@ func _on_save_csv_file_dialog_file_selected(path: String):
 	post_progress_label.hide()
 
 var threads: Dictionary
-var thread_batch_size = 10
+var thread_batch_size = 4
 func _on_save_images_file_dialog_dir_selected(dir):
 	threads = {}
 	saved_imgs = 0
 	post_progress_label.text = "Processing image " + str(saved_imgs) + " / " + str(DATA.size())
 	post_progress_label.show()
 	for i in range(DATA.size()):
-	#for datum in DATA:
 		var thread := Thread.new()
 		threads[i] = thread
 	
@@ -305,8 +305,10 @@ func save_img_thread(datum: Dictionary, dir, thread_index: int) -> void:
 	print("Writing " + new_filename)
 	var file_format_on_disk : Image.Format = Image.load_from_file(datum.filepath).get_format()
 	datum.flood_image.convert(file_format_on_disk)
-	var new_image: Image = mix_images(datum.flood_image, Image.load_from_file(datum.filepath))
-	var err = new_image.save_png(new_filename)
+	var mixed_image: Image = mix_images(datum.flood_image, Image.load_from_file(datum.filepath))
+	var bar_added_image: Image = bar_image(mixed_image, datum.mean_middle, datum.mean_width / 2.0, datum.filename, datum.mean_start, datum.mean_end)
+	#var bar_added_image: Image = bar_image(mixed_image, datum.mean_start, datum.mean_end)
+	var err = bar_added_image.save_png(new_filename)
 	if err:
 		printerr(err)
 	call_deferred("emit_signal", "image_saved", thread_index, dir)
