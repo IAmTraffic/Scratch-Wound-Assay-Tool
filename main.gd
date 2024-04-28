@@ -254,7 +254,7 @@ func bar_image(image: Image, middle_x: float, radius_x: float, n, mean_start, me
 	print(second_x)
 	print("")
 	
-	image.fill_rect(Rect2i(Vector2i(middle_x - line_radius, 0), Vector2i(line_radius * 2.0, image.get_height())), Color(0.0, 0.0, 1.0))
+	#image.fill_rect(Rect2i(Vector2i(middle_x - line_radius, 0), Vector2i(line_radius * 2.0, image.get_height())), Color(0.0, 0.0, 1.0))
 	image.fill_rect(Rect2i(Vector2i(first_x - line_radius, 0), Vector2i(line_radius * 2, image.get_height())), line_color)
 	image.fill_rect(Rect2i(Vector2i(second_x - line_radius, 0), Vector2i(line_radius * 2, image.get_height())), line_color)
 	
