@@ -18,25 +18,37 @@ func get_flood_data() -> Dictionary:
 	
 	await get_tree().create_timer(0.2).timeout
 	
-	var texture: ViewportTexture = viewport.get_texture()
-	hide()
+	var texture: Texture = viewport.get_texture()
+	#hide()
 	var image: Image = texture.get_image()
+	texture = ImageTexture.create_from_image(image)
+	image = texture.get_image()
 	image.resize(256, 256, Image.INTERPOLATE_NEAREST)
 	#image.resize(256, (256.0 / float(image.get_width())) * image.get_height())
 	var data_packed = image.get_data()
 	var data = Array(data_packed)
+	#for i in range(0, 300, 3):
+		#print(str(data[i + 1]) + " " + str(data[i + 1]) + " " + str(data[i + 2]))
+	#await get_tree().create_timer(1000).timeout
+	#return {}
+	print(texture)
+	print(image.get_format())
+	print(ImageTexture.create_from_image(image).get_format())
 	
 	data = format_data_for_analysis(data)
 	
 	
 	
-	var seed_index: int
+	var seed_index: int = -1
 	
 	var largest_island_size = 0
 	var largest_island_seed_index: int
 	var largest_island = []
 	
-	while true:
+	print("Building Islands")
+	for i in range(100):
+	#for i in range(data.size()):
+	#while true:
 		seed_index = get_first_empty_index(data)
 		if seed_index < 0:
 			break
@@ -45,14 +57,27 @@ func get_flood_data() -> Dictionary:
 			largest_island_seed_index = seed_index
 			largest_island_size = empty_island.size()
 			largest_island = empty_island
+		#for index in empty_island:
+			#print(data[index])
 		for index in empty_island:
 			data[index] = PIXEL_STATUS.PREVIOUSLY_SEARCHED
+		#for index in empty_island:
+			#print(data[index])
+		#print(seed_index)
+		#print(empty_island.size())
+		#print("")
+	
+	print("Done building islands")
 	
 	if largest_island_size <= 0:
 		#There is no island on this image
+		print("No islands on image")
 		return {"image": image, "largest_island_size_percentage": 0, "largest_island_seed_index": largest_island_seed_index, "max_width": 0, "min_width": 0, "mean_width": 0, "median_width": 0}
 	
+	print("Largest Island - size: " + str(largest_island_size), ", seed_index: " + str(largest_island_seed_index))
+	
 	var lines : Dictionary = {}
+	print("Beginning data cleanup")
 	for index in largest_island:
 		#Cleanup
 		data[index] = PIXEL_STATUS.PART_OF_LARGEST_ISLAND
@@ -64,7 +89,7 @@ func get_flood_data() -> Dictionary:
 			lines[pixel_coords.y] = []
 		lines[pixel_coords.y].append(pixel_coords.x)
 	
-	
+	print("Beginning data analysis")
 	
 	var max_line_width : float = 0
 	var min_line_width : float = image.get_width()
@@ -110,10 +135,19 @@ func get_flood_data() -> Dictionary:
 	var mean_line_middle = mean_line_end - mean_line_start
 	var largest_island_size_percentage = float(largest_island_size) / float(image.get_width() * image.get_height())
 	
+	print("Beginning image cleanup")
+	
 	#Image cleanup
+	#print(data.size())
 	data = format_data_for_rendering(data)
+	#print(data.size())
+	#print(data.slice(0, 100))
+	#print(data.slice(-100, -1))
+	#data = data.slice(0, -2)
 	var flood_image: Image = Image.create_from_data(image.get_width(), image.get_height(), image.has_mipmaps(), image.get_format(), PackedByteArray(data))
 	flood_image.resize(viewport.get_texture().get_image().get_width(), viewport.get_texture().get_image().get_height())
+	
+	print("Returning data")
 	
 	return {"image": flood_image, "largest_island_size_percentage": largest_island_size_percentage, "largest_island_seed_index": largest_island_seed_index, "max_width": max_line_width, "min_width": min_line_width, "mean_width": mean_line_width, "median_width": median_line_width, "mean_middle": mean_line_middle, "mean_start": mean_line_start, "mean_end": mean_line_end}
 	#return {"image": flood_image, "largest_island_size_percentage": largest_island_size_percentage, "largest_island_seed_index": largest_island_seed_index, "max_width": max_line_width, "min_width": min_line_width, "mean_width": mean_line_width, "median_width": median_line_width, "mean_middle": mean_line_middle}
@@ -126,6 +160,8 @@ func fill_empty_island(data: Array, seed_index: int, image_dimensions: Vector2i)
 	var island_indices = [seed_index]
 	var frontier = [seed_index]
 	var neighbor_indices: Array
+	
+	#print(island_indices)
 	
 	while true:
 		neighbor_indices = get_neighbors(frontier.pop_front(), image_dimensions)
@@ -178,7 +214,8 @@ func get_first_empty_index(data: Array) -> int:
 #Replaces the 255s, etc. with the PIXEL_STATUS enum values
 func format_data_for_analysis(data: Array) -> Array:
 	var new_data = []
-	for i in range(0, data.size(), 3):
+	var raw_pixel_size = 4		#3 if using forward+ rendering, 4 if using compatability
+	for i in range(0, data.size(), raw_pixel_size):
 		var datum_color = data.slice(i, i + 3)
 		match datum_color:
 			[0, 0, 0]:
@@ -187,7 +224,7 @@ func format_data_for_analysis(data: Array) -> Array:
 				new_data.append(PIXEL_STATUS.FULL)
 			_:
 				new_data.append(PIXEL_STATUS.EMPTY)
-				printerr("Bad datum for analysis " + str(datum_color))
+				#printerr("Bad datum for analysis " + str(datum_color))
 	
 	return new_data
 
@@ -201,21 +238,22 @@ func format_data_for_rendering(data: Array) -> Array:
 				new_data.append(0)
 				new_data.append(0)
 				new_data.append(0)
+				new_data.append(255)		#If using compatability rendering
 			PIXEL_STATUS.FULL:
 				new_data.append(0)
 				new_data.append(0)
 				new_data.append(0)
-				#new_data.append(255)
-				#new_data.append(255)
-				#new_data.append(255)
+				new_data.append(255)		#If using compatability rendering
 			PIXEL_STATUS.PREVIOUSLY_SEARCHED:
 				new_data.append(0)
 				new_data.append(0)
 				new_data.append(0)
+				new_data.append(255)		#If using compatability rendering
 			PIXEL_STATUS.PART_OF_LARGEST_ISLAND:
 				new_data.append(255)
 				new_data.append(0)
 				new_data.append(0)
+				new_data.append(255)		#If using compatability rendering
 			_:
 				printerr("Bad datum for rendering " + str(data[i]))
 	

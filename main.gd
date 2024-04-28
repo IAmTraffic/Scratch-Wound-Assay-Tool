@@ -26,6 +26,10 @@ const DOWNLOAD_FLOOD_OVERLAY_MIX_WEIGHT = 0.8
 
 func _ready():
 	connect("image_saved", _on_img_save_thread_complete)
+	
+	for i in range(0, 21):
+		print(DisplayServer.has_feature(i))
+		print("")
 
 func _on_load_btn_pressed():
 	file_dialog.show()
@@ -171,10 +175,12 @@ func render_image_flood(index: int):
 	if flood_data:
 		var flood_image: Image = flood_data.image
 		var flood_texture = ImageTexture.create_from_image(flood_image)
+		#print(flood_texture)
 		
 		flood_image_display.material.set_shader_parameter("flood_image", flood_texture)
 		
 		CURRENT_IMAGE_DATA = flood_data
+		print(CURRENT_IMAGE_DATA)
 
 func _on_threshold_input_field_text_submitted(new_text: String):
 	if new_text.is_valid_int() and int(new_text) >= 0 and int(new_text) <= 256:

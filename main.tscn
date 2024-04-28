@@ -62,7 +62,6 @@ layout_mode = 2
 text = "Load New Image(s)"
 
 [node name="ImageProcessing" type="Control" parent="VBoxContainer"]
-visible = false
 layout_mode = 2
 size_flags_vertical = 3
 
@@ -79,8 +78,8 @@ script = ExtResource("2_kcg4b")
 [node name="SubViewport" type="SubViewport" parent="VBoxContainer/ImageProcessing/SubViewportContainer"]
 unique_name_in_owner = true
 handle_input_locally = false
-size = Vector2i(2, 2)
-render_target_update_mode = 0
+size = Vector2i(1152, 613)
+render_target_update_mode = 4
 
 [node name="TextureRect" type="TextureRect" parent="VBoxContainer/ImageProcessing/SubViewportContainer/SubViewport"]
 material = SubResource("ShaderMaterial_vgm26")
